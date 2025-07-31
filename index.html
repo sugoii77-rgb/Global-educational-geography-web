@@ -463,7 +463,7 @@
                         "location": [23.0, 5.0],
                         "formation": "오랜 시간 동안 비가 적게 내리고 바람이 많이 불면서 모래가 쌓여 만들어진 세계에서 가장 큰 사막입니다. 바람이 모래를 날려와 쌓고, 또 다른 곳으로 옮기기를 반복하면서 거대한 모래언덕들이 생겼어요.",
                         "climate_impact": "낮에는 매우 뜨겁고 밤에는 차가워져요. 모래는 열을 빨리 받고 빨리 식기 때문이에요. 또한 사막에서 나는 먼지가 바람을 타고 멀리까지 날아가서 다른 지역의 날씨에도 영향을 줍니다.",
-                        "image": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Sahara_satellite_hires.jpg"
+                        "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80"
                     },
                     {
                         "name": "마리아나 해구 (태평양)",
@@ -471,27 +471,6 @@
                         "formation": "바다 밑 두 개의 판이 만나면서 한 쪽이 다른 쪽 아래로 들어가면서 만들어진 바다에서 가장 깊은 곳입니다. 마치 땅이 아래로 꺼지면서 깊은 구덩이가 생긴 것과 같아요.",
                         "climate_impact": "바다가 매우 깊어서 바닷물의 흐름에 영향을 줍니다. 깊은 바다의 차가운 물과 표면의 따뜻한 물이 섞이면서 주변 바다의 온도와 해류를 조절하는 역할을 해요.",
                         "image": "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80"
-                    },
-                    {
-                        "name": "울룰루 (호주)",
-                        "location": [-25.3444, 131.0369],
-                        "formation": "아주 오래전에 바다 밑에 쌓인 모래와 자갈이 단단한 바위가 되고, 나중에 땅이 올라오면서 주변이 깎여나가 남은 거대한 바위산입니다. 마치 큰 케이크에서 한 조각만 남은 것처럼 생겼어요.",
-                        "climate_impact": "큰 바위덩어리라서 낮에는 태양열을 많이 받아 뜨거워지고, 밤에는 열을 많이 내보내서 차가워져요. 이 때문에 주변보다 온도 변화가 더 크고, 바위 주변에서 상승기류가 생겨 구름이 생기기도 합니다.",
-                        "image": "https://upload.wikimedia.org/wikipedia/commons/a/a8/ULURU.jpg"
-                    },
-                    {
-                        "name": "이구아수 폭포 (브라질/아르헨티나)",
-                        "location": [-25.6953, -54.4367],
-                        "formation": "강이 흐르다가 단단한 바위와 무른 바위를 만나면서 생긴 폭포입니다. 무른 바위는 물에 깎여나가고 단단한 바위는 남아서 절벽이 되었고, 물이 그 절벽에서 떨어지면서 멋진 폭포가 만들어졌어요.",
-                        "climate_impact": "많은 양의 물이 떨어지면서 주변에 물방울이 많이 생기고 습도가 높아져요. 이 때문에 폭포 주변은 항상 촉촉하고 무지개가 자주 나타나며, 열대 식물들이 잘 자랍니다.",
-                        "image": "https://upload.wikimedia.org/wikipedia/commons/2/21/Iguazu_D%C3%A9cembre_2007_-_Panorama_3.jpg"
-                    },
-                    {
-                        "name": "파타고니아 빙하 (아르헨티나/칠레)",
-                        "location": [-50.4967, -73.1344],
-                        "formation": "남극에 가까운 추운 지역에서 오랜 시간 동안 눈이 쌓이고 압축되어 거대한 얼음덩어리가 된 것입니다. 이 얼음덩어리가 천천히 바다 쪽으로 흘러내리면서 빙하가 만들어졌어요.",
-                        "climate_impact": "거대한 얼음덩어리가 주변 기온을 낮춰주는 역할을 해요. 또한 빙하가 녹으면서 차가운 민물을 바다로 보내서 바닷물의 온도와 염도를 바꾸고, 해류의 흐름에도 영향을 줍니다.",
-                        "image": "https://upload.wikimedia.org/wikipedia/commons/b/b9/SantaCruz-Upsala-P2140135b.jpg"
                     },
                     {
                         "name": "킬리만자로산 (탄자니아)",
@@ -539,19 +518,13 @@
                         .pointLabel('label')
                         .onPointClick((point) => {
                             console.log('Point clicked:', point.landform.name);
-                            
-                            // 강제로 패널 표시
+                            // 패널이 숨겨져 있다면 먼저 표시
                             const panel = document.getElementById('infoPanel');
-                            if (panel) {
+                            if (panel && panel.classList.contains('hidden')) {
                                 panel.classList.remove('hidden');
-                                console.log('Panel shown');
                             }
-                            
-                            // 약간의 지연 후 정보 표시 (패널 애니메이션 완료 대기)
-                            setTimeout(() => {
-                                this.showLandformInfo(point.landform);
-                            }, 100);
-                            
+                            // 정보 표시
+                            this.showLandformInfo(point.landform);
                             // 클릭한 지점으로 카메라 이동
                             this.globe.pointOfView({
                                 lat: point.lat,
@@ -611,7 +584,7 @@
             }
 
             showLandformInfo(landform) {
-                console.log('Showing landform info for:', landform.name);
+                console.log('Showing landform info:', landform.name);
                 
                 const panel = document.getElementById('infoPanel');
                 const welcomeMessage = document.getElementById('welcomeMessage');
@@ -620,12 +593,6 @@
                 if (!panel || !welcomeMessage || !card) {
                     console.error('Panel elements not found');
                     return;
-                }
-
-                // 패널이 숨겨져 있다면 강제로 표시
-                if (panel.classList.contains('hidden')) {
-                    panel.classList.remove('hidden');
-                    console.log('Forced panel to show');
                 }
 
                 // 환영 메시지 숨기고 카드 보이기
@@ -637,46 +604,25 @@
                 const formationElement = document.getElementById('landformFormation');
                 const climateElement = document.getElementById('landformClimate');
                 
-                if (titleElement) {
-                    titleElement.textContent = landform.name;
-                    console.log('Title set:', landform.name);
-                }
-                if (formationElement) {
-                    formationElement.textContent = landform.formation;
-                    console.log('Formation text set');
-                }
-                if (climateElement) {
-                    climateElement.textContent = landform.climate_impact;
-                    console.log('Climate text set');
-                }
+                if (titleElement) titleElement.textContent = landform.name;
+                if (formationElement) formationElement.textContent = landform.formation;
+                if (climateElement) climateElement.textContent = landform.climate_impact;
 
                 // 이미지 설정
                 const imageElement = document.getElementById('landformImage');
                 if (imageElement && landform.image && landform.image.trim() !== '') {
                     imageElement.src = landform.image;
                     imageElement.style.display = 'block';
-                    console.log('Image set:', landform.image);
                     imageElement.onerror = () => {
-                        console.warn('Image failed to load:', landform.image);
                         imageElement.style.display = 'none';
                     };
                 } else if (imageElement) {
                     imageElement.style.display = 'none';
-                    console.log('No image available');
                 }
 
-                console.log('Info panel setup completed');
-                
-                // 최종 확인 - 패널이 실제로 보이는지 체크
-                setTimeout(() => {
-                    const finalCheck = document.getElementById('infoPanel');
-                    if (finalCheck && finalCheck.classList.contains('hidden')) {
-                        console.error('Panel is still hidden, forcing show again');
-                        finalCheck.classList.remove('hidden');
-                    } else {
-                        console.log('Panel is visible');
-                    }
-                }, 200);
+                // 패널 보이기
+                panel.classList.remove('hidden');
+                console.log('Info panel should now be visible');
             }
 
             closeInfoPanel() {
@@ -727,14 +673,6 @@
 
         // 앱 시작
         document.addEventListener('DOMContentLoaded', () => {
-            // 패널 초기 상태 설정
-            const panel = document.getElementById('infoPanel');
-            if (panel) {
-                panel.classList.add('hidden');
-                console.log('Panel initialized as hidden');
-            }
-            
-            // Globe 앱 시작
             new LandformGlobe();
         });
     </script>
