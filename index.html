@@ -448,52 +448,69 @@
             createGlobe() {
                 const geometry = new THREE.SphereGeometry(1, 64, 64);
                 
-                // 더 현실적인 지구 텍스처 생성
+                // 실제 지구 지도와 유사한 텍스처 생성
                 const canvas = document.createElement('canvas');
                 canvas.width = 2048;
                 canvas.height = 1024;
                 const context = canvas.getContext('2d');
                 
-                // 바다 색상 (그라데이션)
-                const gradient = context.createLinearGradient(0, 0, 0, 1024);
-                gradient.addColorStop(0, '#4a90e2');
-                gradient.addColorStop(0.3, '#357abd');
-                gradient.addColorStop(0.7, '#2e5aa0');
-                gradient.addColorStop(1, '#1e4080');
-                context.fillStyle = gradient;
+                // 바다 색상
+                context.fillStyle = '#1e3a8a'; // 진한 파란색
                 context.fillRect(0, 0, 2048, 1024);
                 
-                // 대륙 그리기 (더 현실적인 형태)
-                context.fillStyle = '#228B22';
+                // 대륙 색상
+                context.fillStyle = '#16a34a'; // 초록색
                 
-                // 북미 대륙
-                this.drawRealisticContinent(context, 300, 300, [
-                    [0, -40], [60, -60], [120, -50], [100, 20], [80, 60], [40, 80], [-20, 70], [-40, 40], [-30, -10]
+                // 실제 지구 좌표계를 고려한 대륙 그리기
+                // 경도 0도가 중앙에 오도록 조정
+                
+                // 아프리카 대륙 (중앙)
+                this.drawContinentPath(context, [
+                    [1024, 400], [1100, 350], [1150, 400], [1170, 500], [1150, 600], [1100, 650], [1050, 620], [1020, 550]
                 ]);
                 
-                // 남미 대륙
-                this.drawRealisticContinent(context, 350, 600, [
-                    [0, -80], [40, -60], [30, 0], [50, 40], [40, 80], [20, 100], [-10, 90], [-20, 60], [-15, 20], [-25, -20]
+                // 유럽 (아프리카 위쪽)
+                this.drawContinentPath(context, [
+                    [950, 280], [1050, 250], [1150, 280], [1200, 320], [1100, 350], [1000, 330], [920, 300]
                 ]);
                 
-                // 유럽/아시아 대륙
-                this.drawRealisticContinent(context, 800, 250, [
-                    [-80, -40], [150, -60], [200, -30], [180, 20], [160, 50], [100, 60], [50, 80], [-20, 70], [-60, 40], [-70, 0]
+                // 아시아 (유럽 오른쪽, 더 크게)
+                this.drawContinentPath(context, [
+                    [1200, 200], [1400, 180], [1600, 200], [1700, 250], [1750, 300], [1700, 350], [1600, 380], [1500, 350], [1400, 320], [1300, 280]
                 ]);
                 
-                // 아프리카 대륙
-                this.drawRealisticContinent(context, 850, 450, [
-                    [0, -60], [40, -50], [50, -20], [60, 20], [50, 60], [40, 100], [20, 120], [-10, 110], [-20, 80], [-25, 40], [-30, 0], [-20, -40]
+                // 인도 (아시아 남쪽)
+                this.drawContinentPath(context, [
+                    [1450, 400], [1500, 380], [1520, 420], [1500, 460], [1470, 470], [1450, 450]
                 ]);
                 
-                // 호주 대륙
-                this.drawRealisticContinent(context, 1300, 700, [
-                    [0, -30], [80, -20], [100, 0], [90, 30], [60, 40], [20, 35], [-10, 20], [-5, -10]
+                // 북미 대륙 (왼쪽)
+                this.drawContinentPath(context, [
+                    [200, 200], [400, 150], [500, 200], [480, 300], [450, 400], [400, 450], [350, 420], [300, 380], [250, 320], [200, 280]
                 ]);
+                
+                // 남미 대륙 (북미 아래)
+                this.drawContinentPath(context, [
+                    [450, 450], [480, 420], [500, 480], [510, 550], [500, 650], [480, 720], [450, 750], [420, 720], [410, 650], [420, 550]
+                ]);
+                
+                // 호주 (오른쪽 아래)
+                this.drawContinentPath(context, [
+                    [1650, 650], [1750, 640], [1800, 670], [1780, 700], [1720, 710], [1670, 690]
+                ]);
+                
+                // 그린란드 (북쪽)
+                this.drawContinentPath(context, [
+                    [800, 100], [900, 80], [950, 120], [920, 160], [870, 170], [820, 150]
+                ]);
+                
+                // 남극 대륙 (아래쪽)
+                context.fillRect(0, 900, 2048, 124);
+                
+                // 섬들 추가
+                this.addIslands(context);
                 
                 const texture = new THREE.CanvasTexture(canvas);
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
                 
                 const material = new THREE.MeshPhongMaterial({
                     map: texture,
@@ -503,7 +520,7 @@
 
                 const globe = new THREE.Mesh(geometry, material);
                 globe.receiveShadow = true;
-                this.globeGroup.add(globe); // 그룹에 추가
+                this.globeGroup.add(globe);
 
                 // 대기권 효과
                 const atmosphereGeometry = new THREE.SphereGeometry(1.01, 64, 64);
@@ -514,28 +531,58 @@
                     side: THREE.BackSide
                 });
                 const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-                this.globeGroup.add(atmosphere); // 그룹에 추가
+                this.globeGroup.add(atmosphere);
             }
 
-            drawRealisticContinent(context, centerX, centerY, points) {
+            drawContinentPath(context, points) {
                 context.beginPath();
-                context.moveTo(centerX + points[0][0], centerY + points[0][1]);
+                context.moveTo(points[0][0], points[0][1]);
                 
                 for (let i = 1; i < points.length; i++) {
-                    context.lineTo(centerX + points[i][0], centerY + points[i][1]);
+                    context.lineTo(points[i][0], points[i][1]);
                 }
                 
                 context.closePath();
                 context.fill();
+            }
+
+            addIslands(context) {
+                // 일본
+                context.fillStyle = '#16a34a';
+                context.beginPath();
+                context.ellipse(1750, 320, 30, 80, Math.PI * 0.2, 0, 2 * Math.PI);
+                context.fill();
                 
-                // 추가 섬들과 디테일
-                for (let i = 0; i < 8; i++) {
-                    const offsetX = (Math.random() - 0.5) * 200;
-                    const offsetY = (Math.random() - 0.5) * 150;
-                    const size = Math.random() * 20 + 5;
-                    
+                // 영국
+                context.beginPath();
+                context.ellipse(980, 280, 20, 40, 0, 0, 2 * Math.PI);
+                context.fill();
+                
+                // 마다가스카르
+                context.beginPath();
+                context.ellipse(1200, 580, 15, 50, 0, 0, 2 * Math.PI);
+                context.fill();
+                
+                // 뉴질랜드
+                context.beginPath();
+                context.ellipse(1850, 750, 25, 60, Math.PI * 0.3, 0, 2 * Math.PI);
+                context.fill();
+                
+                // 인도네시아 군도
+                for (let i = 0; i < 10; i++) {
                     context.beginPath();
-                    context.ellipse(centerX + offsetX, centerY + offsetY, size, size * 0.7, Math.random() * Math.PI, 0, 2 * Math.PI);
+                    const x = 1500 + (i * 30) + (Math.random() - 0.5) * 20;
+                    const y = 520 + (Math.random() - 0.5) * 40;
+                    context.ellipse(x, y, 8 + Math.random() * 8, 5 + Math.random() * 5, 0, 0, 2 * Math.PI);
+                    context.fill();
+                }
+                
+                // 캐리브해 군도
+                for (let i = 0; i < 8; i++) {
+                    context.beginPath();
+                    const x = 420 + (i * 15) + (Math.random() - 0.5) * 10;
+                    const y = 400 + (Math.random() - 0.5) * 30;
+                    context.ellipse(x, y, 5 + Math.random() * 5, 3 + Math.random() * 3, 0, 0, 2 * Math.PI);
                     context.fill();
                 }
             }
