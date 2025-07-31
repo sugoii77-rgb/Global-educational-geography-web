@@ -284,6 +284,7 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
+                z-index: 200;
             }
 
             .info-panel.hidden {
@@ -517,6 +518,12 @@
                         .pointLabel('label')
                         .onPointClick((point) => {
                             console.log('Point clicked:', point.landform.name);
+                            // 패널이 숨겨져 있다면 먼저 표시
+                            const panel = document.getElementById('infoPanel');
+                            if (panel && panel.classList.contains('hidden')) {
+                                panel.classList.remove('hidden');
+                            }
+                            // 정보 표시
                             this.showLandformInfo(point.landform);
                             // 클릭한 지점으로 카메라 이동
                             this.globe.pointOfView({
@@ -549,31 +556,25 @@
             addEventListeners() {
                 // 요소가 존재하는지 확인 후 이벤트 리스너 추가
                 const rotateBtn = document.getElementById('rotateBtn');
-                const resetBtn = document.getElementById('resetBtn');
+                const resetBtn = document.getElementById('resetBtn');  
                 const closeBtn = document.getElementById('closeBtn');
 
                 if (rotateBtn) {
                     rotateBtn.addEventListener('click', () => {
                         this.toggleRotation();
                     });
-                } else {
-                    console.warn('rotateBtn not found');
                 }
 
                 if (resetBtn) {
                     resetBtn.addEventListener('click', () => {
                         this.resetView();
                     });
-                } else {
-                    console.warn('resetBtn not found');
                 }
 
                 if (closeBtn) {
                     closeBtn.addEventListener('click', () => {
                         this.closeInfoPanel();
                     });
-                } else {
-                    console.warn('closeBtn not found');
                 }
 
                 // 리사이즈 이벤트
@@ -583,33 +584,45 @@
             }
 
             showLandformInfo(landform) {
+                console.log('Showing landform info:', landform.name);
+                
                 const panel = document.getElementById('infoPanel');
                 const welcomeMessage = document.getElementById('welcomeMessage');
                 const card = document.getElementById('landformCard');
+
+                if (!panel || !welcomeMessage || !card) {
+                    console.error('Panel elements not found');
+                    return;
+                }
 
                 // 환영 메시지 숨기고 카드 보이기
                 welcomeMessage.style.display = 'none';
                 card.style.display = 'block';
 
                 // 정보 채우기
-                document.getElementById('landformTitle').textContent = landform.name;
-                document.getElementById('landformFormation').textContent = landform.formation;
-                document.getElementById('landformClimate').textContent = landform.climate_impact;
+                const titleElement = document.getElementById('landformTitle');
+                const formationElement = document.getElementById('landformFormation');
+                const climateElement = document.getElementById('landformClimate');
+                
+                if (titleElement) titleElement.textContent = landform.name;
+                if (formationElement) formationElement.textContent = landform.formation;
+                if (climateElement) climateElement.textContent = landform.climate_impact;
 
                 // 이미지 설정
                 const imageElement = document.getElementById('landformImage');
-                if (landform.image && landform.image.trim() !== '') {
+                if (imageElement && landform.image && landform.image.trim() !== '') {
                     imageElement.src = landform.image;
                     imageElement.style.display = 'block';
                     imageElement.onerror = () => {
                         imageElement.style.display = 'none';
                     };
-                } else {
+                } else if (imageElement) {
                     imageElement.style.display = 'none';
                 }
 
                 // 패널 보이기
                 panel.classList.remove('hidden');
+                console.log('Info panel should now be visible');
             }
 
             closeInfoPanel() {
