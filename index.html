@@ -255,6 +255,21 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 지구본 점 스타일 */
+        .point-label {
+            background: rgba(255, 69, 87, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            white-space: nowrap;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
         /* 반응형 디자인 */
         @media (max-width: 768px) {
             .container {
@@ -361,22 +376,13 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
     <script>
         class LandformGlobe {
             constructor() {
-                this.scene = null;
-                this.camera = null;
-                this.renderer = null;
-                this.globeGroup = null; // 지구본과 포인트들을 포함하는 그룹
+                this.globe = null;
                 this.landforms = [];
-                this.landformPoints = [];
-                this.mouse = new THREE.Vector2();
-                this.raycaster = new THREE.Raycaster();
                 this.isRotating = true;
-                this.hoveredPoint = null;
-                this.isDragging = false;
-                this.previousMousePosition = { x: 0, y: 0 };
                 
                 this.init();
                 this.loadLandformData();
@@ -385,227 +391,35 @@
             init() {
                 const container = document.getElementById('globeContainer');
                 
-                // Scene 설정
-                this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x000011);
-                
-                // Camera 설정
-                this.camera = new THREE.PerspectiveCamera(
-                    60, 
-                    container.clientWidth / container.clientHeight, 
-                    0.1, 
-                    1000
-                );
-                this.camera.position.set(0, 0, 2.5);
+                // Globe.gl 초기화
+                this.globe = Globe()
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+                    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                    .showAtmosphere(true)
+                    .atmosphereColor('#3a228a')
+                    .atmosphereAltitude(0.25)
+                    .enablePointerInteraction(true)
+                    .width(container.clientWidth)
+                    .height(container.clientHeight);
 
-                // Renderer 설정
-                this.renderer = new THREE.WebGLRenderer({ 
-                    antialias: true, 
-                    alpha: true 
-                });
-                this.renderer.setSize(container.clientWidth, container.clientHeight);
-                this.renderer.setPixelRatio(window.devicePixelRatio);
-                this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                container.appendChild(this.renderer.domElement);
+                // 컨테이너에 추가
+                container.appendChild(this.globe(container));
 
-                // 지구본 그룹 생성 (지구본과 포인트들이 함께 회전하도록)
-                this.globeGroup = new THREE.Group();
-                this.scene.add(this.globeGroup);
+                // 초기 카메라 설정
+                this.globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 });
 
-                // 조명 설정
-                const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
-                this.scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-                directionalLight.position.set(5, 3, 5);
-                directionalLight.castShadow = true;
-                this.scene.add(directionalLight);
-
-                // 추가 조명 (뒷면 조명)
-                const backLight = new THREE.DirectionalLight(0x0077ff, 0.3);
-                backLight.position.set(-5, -3, -5);
-                this.scene.add(backLight);
-
-                // 지구본 생성
-                this.createGlobe();
-
-                // 별 배경 추가
-                this.createStarField();
+                // 자동 회전 설정
+                this.globe.controls().autoRotate = true;
+                this.globe.controls().autoRotateSpeed = 0.5;
 
                 // 이벤트 리스너 추가
                 this.addEventListeners();
 
-                // 애니메이션 시작
-                this.animate();
-
-                // 로딩 메시지 숨기기
+                // 로딩 완료
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
-                }, 1000);
-            }
-
-            createGlobe() {
-                const geometry = new THREE.SphereGeometry(1, 64, 64);
-                
-                // 실제 지구 지도와 유사한 텍스처 생성
-                const canvas = document.createElement('canvas');
-                canvas.width = 2048;
-                canvas.height = 1024;
-                const context = canvas.getContext('2d');
-                
-                // 바다 색상
-                context.fillStyle = '#1e3a8a'; // 진한 파란색
-                context.fillRect(0, 0, 2048, 1024);
-                
-                // 대륙 색상
-                context.fillStyle = '#16a34a'; // 초록색
-                
-                // 실제 지구 좌표계를 고려한 대륙 그리기
-                // 경도 0도가 중앙에 오도록 조정
-                
-                // 아프리카 대륙 (중앙)
-                this.drawContinentPath(context, [
-                    [1024, 400], [1100, 350], [1150, 400], [1170, 500], [1150, 600], [1100, 650], [1050, 620], [1020, 550]
-                ]);
-                
-                // 유럽 (아프리카 위쪽)
-                this.drawContinentPath(context, [
-                    [950, 280], [1050, 250], [1150, 280], [1200, 320], [1100, 350], [1000, 330], [920, 300]
-                ]);
-                
-                // 아시아 (유럽 오른쪽, 더 크게)
-                this.drawContinentPath(context, [
-                    [1200, 200], [1400, 180], [1600, 200], [1700, 250], [1750, 300], [1700, 350], [1600, 380], [1500, 350], [1400, 320], [1300, 280]
-                ]);
-                
-                // 인도 (아시아 남쪽)
-                this.drawContinentPath(context, [
-                    [1450, 400], [1500, 380], [1520, 420], [1500, 460], [1470, 470], [1450, 450]
-                ]);
-                
-                // 북미 대륙 (왼쪽)
-                this.drawContinentPath(context, [
-                    [200, 200], [400, 150], [500, 200], [480, 300], [450, 400], [400, 450], [350, 420], [300, 380], [250, 320], [200, 280]
-                ]);
-                
-                // 남미 대륙 (북미 아래)
-                this.drawContinentPath(context, [
-                    [450, 450], [480, 420], [500, 480], [510, 550], [500, 650], [480, 720], [450, 750], [420, 720], [410, 650], [420, 550]
-                ]);
-                
-                // 호주 (오른쪽 아래)
-                this.drawContinentPath(context, [
-                    [1650, 650], [1750, 640], [1800, 670], [1780, 700], [1720, 710], [1670, 690]
-                ]);
-                
-                // 그린란드 (북쪽)
-                this.drawContinentPath(context, [
-                    [800, 100], [900, 80], [950, 120], [920, 160], [870, 170], [820, 150]
-                ]);
-                
-                // 남극 대륙 (아래쪽)
-                context.fillRect(0, 900, 2048, 124);
-                
-                // 섬들 추가
-                this.addIslands(context);
-                
-                const texture = new THREE.CanvasTexture(canvas);
-                
-                const material = new THREE.MeshPhongMaterial({
-                    map: texture,
-                    shininess: 0.1,
-                    transparent: false
-                });
-
-                const globe = new THREE.Mesh(geometry, material);
-                globe.receiveShadow = true;
-                this.globeGroup.add(globe);
-
-                // 대기권 효과
-                const atmosphereGeometry = new THREE.SphereGeometry(1.01, 64, 64);
-                const atmosphereMaterial = new THREE.MeshPhongMaterial({
-                    color: 0x93cfef,
-                    transparent: true,
-                    opacity: 0.1,
-                    side: THREE.BackSide
-                });
-                const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-                this.globeGroup.add(atmosphere);
-            }
-
-            drawContinentPath(context, points) {
-                context.beginPath();
-                context.moveTo(points[0][0], points[0][1]);
-                
-                for (let i = 1; i < points.length; i++) {
-                    context.lineTo(points[i][0], points[i][1]);
-                }
-                
-                context.closePath();
-                context.fill();
-            }
-
-            addIslands(context) {
-                // 일본
-                context.fillStyle = '#16a34a';
-                context.beginPath();
-                context.ellipse(1750, 320, 30, 80, Math.PI * 0.2, 0, 2 * Math.PI);
-                context.fill();
-                
-                // 영국
-                context.beginPath();
-                context.ellipse(980, 280, 20, 40, 0, 0, 2 * Math.PI);
-                context.fill();
-                
-                // 마다가스카르
-                context.beginPath();
-                context.ellipse(1200, 580, 15, 50, 0, 0, 2 * Math.PI);
-                context.fill();
-                
-                // 뉴질랜드
-                context.beginPath();
-                context.ellipse(1850, 750, 25, 60, Math.PI * 0.3, 0, 2 * Math.PI);
-                context.fill();
-                
-                // 인도네시아 군도
-                for (let i = 0; i < 10; i++) {
-                    context.beginPath();
-                    const x = 1500 + (i * 30) + (Math.random() - 0.5) * 20;
-                    const y = 520 + (Math.random() - 0.5) * 40;
-                    context.ellipse(x, y, 8 + Math.random() * 8, 5 + Math.random() * 5, 0, 0, 2 * Math.PI);
-                    context.fill();
-                }
-                
-                // 캐리브해 군도
-                for (let i = 0; i < 8; i++) {
-                    context.beginPath();
-                    const x = 420 + (i * 15) + (Math.random() - 0.5) * 10;
-                    const y = 400 + (Math.random() - 0.5) * 30;
-                    context.ellipse(x, y, 5 + Math.random() * 5, 3 + Math.random() * 3, 0, 0, 2 * Math.PI);
-                    context.fill();
-                }
-            }
-
-            createStarField() {
-                const starsGeometry = new THREE.BufferGeometry();
-                const starsMaterial = new THREE.PointsMaterial({
-                    color: 0xffffff,
-                    size: 2,
-                    sizeAttenuation: false
-                });
-
-                const starsVertices = [];
-                for (let i = 0; i < 1000; i++) {
-                    const x = (Math.random() - 0.5) * 2000;
-                    const y = (Math.random() - 0.5) * 2000;
-                    const z = (Math.random() - 0.5) * 2000;
-                    starsVertices.push(x, y, z);
-                }
-
-                starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
-                const stars = new THREE.Points(starsGeometry, starsMaterial);
-                this.scene.add(stars); // 별은 씬에 직접 추가 (회전하지 않음)
+                }, 2000);
             }
 
             async loadLandformData() {
@@ -626,138 +440,79 @@
                         "name": "그랜드캐니언 (미국)",
                         "location": [36.1, -112.1],
                         "formation": "오랜 시간 동안 콜로라도 강이 바위를 깎아내면서 만들어진 거대한 골짜기입니다. 마치 물이 돌을 깎는 것처럼, 수백만 년 동안 강물이 흐르면서 점점 더 깊은 계곡을 만들었어요.",
-                        "climate_impact": "깊은 계곡이어서 아래쪽과 위쪽의 온도가 많이 달라요. 계곡 밑바닥은 더 따뜻하고, 위쪽은 더 시원합니다.",
+                        "climate_impact": "깊은 계곡이어서 아래쪽과 위쪽의 온도가 많이 달라요. 계곡 밑바닥은 더 따뜻하고, 위쪽은 더 시원합니다. 또한 바람의 방향을 바꾸어 주변 지역의 날씨에 영향을 줍니다.",
                         "image": "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
                     },
                     {
-                        "name": "에베레스트산 (네팔)",
+                        "name": "에베레스트산 (네팔/티베트)",
                         "location": [27.9881, 86.9250],
-                        "formation": "인도 대륙과 아시아 대륙이 서로 밀려오면서 땅이 위로 솟아올라 만들어진 세계에서 가장 높은 산입니다.",
-                        "climate_impact": "높은 산이어서 구름과 바람을 막아주는 역할을 합니다. 히말라야 산맥 때문에 인도 쪽은 비가 많이 오고, 북쪽 티베트는 건조해져요.",
+                        "formation": "인도 대륙과 아시아 대륙이 서로 밀려오면서 땅이 위로 솟아올라 만들어진 세계에서 가장 높은 산입니다. 마치 두 장의 종이를 밀면 구겨지듯이, 두 대륙이 충돌하면서 높은 산맥이 만들어졌어요.",
+                        "climate_impact": "높은 산이어서 구름과 바람을 막아주는 역할을 합니다. 히말라야 산맥 때문에 인도 쪽은 비가 많이 오고, 북쪽 티베트는 건조해져요. 또한 높을수록 기온이 낮아져서 꼭대기는 항상 눈으로 덮여있습니다.",
                         "image": "https://images.unsplash.com/photo-1605540436563-5bca919ae766?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80"
                     },
                     {
                         "name": "사하라사막 (아프리카)",
                         "location": [23.0, 5.0],
-                        "formation": "오랜 시간 동안 비가 적게 내리고 바람이 많이 불면서 모래가 쌓여 만들어진 세계에서 가장 큰 사막입니다.",
-                        "climate_impact": "낮에는 매우 뜨겁고 밤에는 차가워져요. 모래는 열을 빨리 받고 빨리 식기 때문이에요.",
+                        "formation": "오랜 시간 동안 비가 적게 내리고 바람이 많이 불면서 모래가 쌓여 만들어진 세계에서 가장 큰 사막입니다. 바람이 모래를 날려와 쌓고, 또 다른 곳으로 옮기기를 반복하면서 거대한 모래언덕들이 생겼어요.",
+                        "climate_impact": "낮에는 매우 뜨겁고 밤에는 차가워져요. 모래는 열을 빨리 받고 빨리 식기 때문이에요. 또한 사막에서 나는 먼지가 바람을 타고 멀리까지 날아가서 다른 지역의 날씨에도 영향을 줍니다.",
                         "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80"
+                    },
+                    {
+                        "name": "마리아나 해구 (태평양)",
+                        "location": [11.4, 142.2],
+                        "formation": "바다 밑 두 개의 판이 만나면서 한 쪽이 다른 쪽 아래로 들어가면서 만들어진 바다에서 가장 깊은 곳입니다. 마치 땅이 아래로 꺼지면서 깊은 구덩이가 생긴 것과 같아요.",
+                        "climate_impact": "바다가 매우 깊어서 바닷물의 흐름에 영향을 줍니다. 깊은 바다의 차가운 물과 표면의 따뜻한 물이 섞이면서 주변 바다의 온도와 해류를 조절하는 역할을 해요.",
+                        "image": "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80"
+                    },
+                    {
+                        "name": "킬리만자로산 (탄자니아)",
+                        "location": [-3.0674, 37.3556],
+                        "formation": "땅 속에서 뜨거운 마그마가 올라와서 만들어진 화산입니다. 오랜 시간 동안 용암이 쌓이고 쌓여서 아프리카에서 가장 높은 산이 되었어요. 지금은 화산 활동이 멈춰있는 상태입니다.",
+                        "climate_impact": "적도 근처에 있지만 산이 너무 높아서 꼭대기에는 눈이 쌓여있어요. 높이에 따라 기온이 달라서 아래쪽은 더운 사바나, 중간은 숲, 위쪽은 추운 지역으로 나뉘어져 있습니다.",
+                        "image": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2072&q=80"
                     }
                 ];
                 this.createLandformPoints();
             }
 
             createLandformPoints() {
-                this.landforms.forEach((landform, index) => {
-                    const [lat, lon] = landform.location;
-                    
-                    // 위도/경도를 3D 좌표로 변환
-                    const phi = (90 - lat) * (Math.PI / 180);
-                    const theta = (lon + 180) * (Math.PI / 180);
-                    
-                    const radius = 1.02;
-                    const x = -(radius * Math.sin(phi) * Math.cos(theta));
-                    const y = radius * Math.cos(phi);
-                    const z = radius * Math.sin(phi) * Math.sin(theta);
-
-                    // 포인트 생성
-                    const pointGeometry = new THREE.SphereGeometry(0.025, 16, 16);
-                    const pointMaterial = new THREE.MeshBasicMaterial({ 
-                        color: 0xff4757,
-                        transparent: false
-                    });
-                    
-                    const point = new THREE.Mesh(pointGeometry, pointMaterial);
-                    point.position.set(x, y, z);
-                    point.userData = { landform: landform, index: index };
-                    
-                    // Glow 효과를 위한 outer sphere
-                    const glowGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-                    const glowMaterial = new THREE.MeshBasicMaterial({
-                        color: 0xff4757,
-                        transparent: true,
-                        opacity: 0.3
-                    });
-                    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-                    glow.position.copy(point.position);
-                    
-                    // 포인트들을 지구본 그룹에 추가 (함께 회전하도록)
-                    this.globeGroup.add(point);
-                    this.globeGroup.add(glow);
-                    this.landformPoints.push({ point, glow, landform });
-
-                    // 펄스 애니메이션을 위한 초기 설정
-                    point.pulsePhase = Math.random() * Math.PI * 2;
-                    glow.pulsePhase = point.pulsePhase;
+                // 포인트 데이터 준비
+                const pointsData = this.landforms.map((landform, index) => {
+                    const [lat, lng] = landform.location;
+                    return {
+                        lat: lat,
+                        lng: lng,
+                        size: 0.8,
+                        color: '#ff4757',
+                        landform: landform,
+                        label: landform.name
+                    };
                 });
+
+                // 포인트들을 지구본에 추가
+                this.globe
+                    .pointsData(pointsData)
+                    .pointColor('color')
+                    .pointAltitude(0.01)
+                    .pointRadius('size')
+                    .pointResolution(20)
+                    .pointLabel('label')
+                    .onPointClick((point) => {
+                        this.showLandformInfo(point.landform);
+                        // 클릭한 지점으로 카메라 이동
+                        this.globe.pointOfView({
+                            lat: point.lat,
+                            lng: point.lng,
+                            altitude: 1.5
+                        }, 1000);
+                    })
+                    .onPointHover((point) => {
+                        // 호버 시 커서 변경
+                        document.body.style.cursor = point ? 'pointer' : 'default';
+                    });
             }
 
             addEventListeners() {
-                const canvas = this.renderer.domElement;
-                
-                // 마우스 이벤트
-                canvas.addEventListener('mousedown', (event) => {
-                    this.isDragging = true;
-                    this.previousMousePosition = {
-                        x: event.clientX,
-                        y: event.clientY
-                    };
-                    canvas.style.cursor = 'grabbing';
-                });
-
-                canvas.addEventListener('mousemove', (event) => {
-                    if (this.isDragging) {
-                        const deltaMove = {
-                            x: event.clientX - this.previousMousePosition.x,
-                            y: event.clientY - this.previousMousePosition.y
-                        };
-
-                        // 지구본 그룹을 회전 (포인트들도 함께 회전됨)
-                        this.globeGroup.rotation.y += deltaMove.x * 0.01;
-                        this.globeGroup.rotation.x += deltaMove.y * 0.01;
-
-                        this.previousMousePosition = {
-                            x: event.clientX,
-                            y: event.clientY
-                        };
-                    } else {
-                        // 호버 체크
-                        const rect = canvas.getBoundingClientRect();
-                        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-                        
-                        this.checkIntersections();
-                    }
-                });
-
-                canvas.addEventListener('mouseup', () => {
-                    this.isDragging = false;
-                    canvas.style.cursor = 'grab';
-                });
-
-                canvas.addEventListener('mouseleave', () => {
-                    this.isDragging = false;
-                    canvas.style.cursor = 'default';
-                });
-
-                canvas.addEventListener('click', (event) => {
-                    if (!this.isDragging) {
-                        this.handleClick();
-                    }
-                });
-
-                // 휠 이벤트 (줌)
-                canvas.addEventListener('wheel', (event) => {
-                    event.preventDefault();
-                    const zoom = event.deltaY * 0.001;
-                    this.camera.position.z = Math.max(1.5, Math.min(5, this.camera.position.z + zoom));
-                });
-
-                // 리사이즈 이벤트
-                window.addEventListener('resize', () => {
-                    this.onWindowResize();
-                });
-
                 // 컨트롤 버튼들
                 document.getElementById('rotateBtn').addEventListener('click', () => {
                     this.toggleRotation();
@@ -771,72 +526,10 @@
                     this.closeInfoPanel();
                 });
 
-                // 터치 이벤트 (모바일 지원)
-                canvas.addEventListener('touchstart', (event) => {
-                    if (event.touches.length === 1) {
-                        this.isDragging = true;
-                        this.previousMousePosition = {
-                            x: event.touches[0].clientX,
-                            y: event.touches[0].clientY
-                        };
-                    }
+                // 리사이즈 이벤트
+                window.addEventListener('resize', () => {
+                    this.onWindowResize();
                 });
-
-                canvas.addEventListener('touchmove', (event) => {
-                    event.preventDefault();
-                    if (this.isDragging && event.touches.length === 1) {
-                        const deltaMove = {
-                            x: event.touches[0].clientX - this.previousMousePosition.x,
-                            y: event.touches[0].clientY - this.previousMousePosition.y
-                        };
-
-                        // 지구본 그룹을 회전 (포인트들도 함께 회전됨)
-                        this.globeGroup.rotation.y += deltaMove.x * 0.01;
-                        this.globeGroup.rotation.x += deltaMove.y * 0.01;
-
-                        this.previousMousePosition = {
-                            x: event.touches[0].clientX,
-                            y: event.touches[0].clientY
-                        };
-                    }
-                });
-
-                canvas.addEventListener('touchend', () => {
-                    this.isDragging = false;
-                });
-
-                // 기본 커서 설정
-                canvas.style.cursor = 'grab';
-            }
-
-            checkIntersections() {
-                this.raycaster.setFromCamera(this.mouse, this.camera);
-                const points = this.landformPoints.map(item => item.point);
-                const intersects = this.raycaster.intersectObjects(points);
-
-                // 이전 호버 상태 해제
-                if (this.hoveredPoint && !intersects.find(i => i.object === this.hoveredPoint)) {
-                    this.hoveredPoint.material.color.setHex(0xff4757);
-                    this.hoveredPoint = null;
-                    this.renderer.domElement.style.cursor = 'grab';
-                }
-
-                // 새로운 호버 상태 설정
-                if (intersects.length > 0) {
-                    const point = intersects[0].object;
-                    if (this.hoveredPoint !== point) {
-                        this.hoveredPoint = point;
-                        point.material.color.setHex(0xff8c94);
-                        this.renderer.domElement.style.cursor = 'pointer';
-                    }
-                }
-            }
-
-            handleClick() {
-                if (this.hoveredPoint) {
-                    const landform = this.hoveredPoint.userData.landform;
-                    this.showLandformInfo(landform);
-                }
             }
 
             showLandformInfo(landform) {
@@ -887,56 +580,31 @@
 
             toggleRotation() {
                 this.isRotating = !this.isRotating;
+                this.globe.controls().autoRotate = this.isRotating;
+                
                 const btn = document.getElementById('rotateBtn');
                 btn.textContent = this.isRotating ? '자동회전 정지' : '자동회전 시작';
                 btn.classList.toggle('active');
             }
 
             resetView() {
-                // 카메라 위치 초기화
-                this.camera.position.set(0, 0, 2.5);
-                
-                // 지구본 그룹 회전 초기화
-                this.globeGroup.rotation.set(0, 0, 0);
+                // 원래 위치로 카메라 이동
+                this.globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
                 
                 // 자동 회전 재시작
                 this.isRotating = true;
+                this.globe.controls().autoRotate = true;
+                
                 const btn = document.getElementById('rotateBtn');
                 btn.textContent = '자동회전 정지';
                 btn.classList.remove('active');
             }
 
-            animate() {
-                requestAnimationFrame(() => this.animate());
-
-                // 지구본 자동 회전 (드래그 중이 아닐 때만)
-                if (this.isRotating && this.globeGroup && !this.isDragging) {
-                    this.globeGroup.rotation.y += 0.003;
-                }
-
-                // 포인트 펄스 애니메이션
-                this.landformPoints.forEach(({ point, glow }) => {
-                    point.pulsePhase += 0.08;
-                    const scale = 1 + Math.sin(point.pulsePhase) * 0.3;
-                    point.scale.setScalar(scale);
-                    
-                    // Glow 효과
-                    glow.pulsePhase += 0.06;
-                    const glowScale = 1 + Math.sin(glow.pulsePhase) * 0.2;
-                    glow.scale.setScalar(glowScale);
-                    glow.material.opacity = 0.2 + Math.sin(glow.pulsePhase) * 0.1;
-                });
-
-                this.renderer.render(this.scene, this.camera);
-            }
-
             onWindowResize() {
                 const container = document.getElementById('globeContainer');
-                
-                this.camera.aspect = container.clientWidth / container.clientHeight;
-                this.camera.updateProjectionMatrix();
-                
-                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.globe
+                    .width(container.clientWidth)
+                    .height(container.clientHeight);
             }
         }
 
