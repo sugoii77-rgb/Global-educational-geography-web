@@ -1,0 +1,72 @@
+[
+  {
+    "name": "그랜드캐니언 (미국)",
+    "location": [36.1, -112.1],
+    "formation": "오랜 시간 동안 콜로라도 강이 바위를 깎아내면서 만들어진 거대한 골짜기입니다. 마치 물이 돌을 깎는 것처럼, 수백만 년 동안 강물이 흐르면서 점점 더 깊은 계곡을 만들었어요.",
+    "climate_impact": "깊은 계곡이어서 아래쪽과 위쪽의 온도가 많이 달라요. 계곡 밑바닥은 더 따뜻하고, 위쪽은 더 시원합니다. 또한 바람의 방향을 바꾸어 주변 지역의 날씨에 영향을 줍니다.",
+    "image": "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    "name": "에베레스트산 (네팔/티베트)",
+    "location": [27.9881, 86.9250],
+    "formation": "인도 대륙과 아시아 대륙이 서로 밀려오면서 땅이 위로 솟아올라 만들어진 세계에서 가장 높은 산입니다. 마치 두 장의 종이를 밀면 구겨지듯이, 두 대륙이 충돌하면서 높은 산맥이 만들어졌어요.",
+    "climate_impact": "높은 산이어서 구름과 바람을 막아주는 역할을 합니다. 히말라야 산맥 때문에 인도 쪽은 비가 많이 오고, 북쪽 티베트는 건조해져요. 또한 높을수록 기온이 낮아져서 꼭대기는 항상 눈으로 덮여있습니다.",
+    "image": "https://images.unsplash.com/photo-1605540436563-5bca919ae766?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+  },
+  {
+    "name": "사하라사막 (아프리카)",
+    "location": [23.0, 5.0],
+    "formation": "오랜 시간 동안 비가 적게 내리고 바람이 많이 불면서 모래가 쌓여 만들어진 세계에서 가장 큰 사막입니다. 바람이 모래를 날려와 쌓고, 또 다른 곳으로 옮기기를 반복하면서 거대한 모래언덕들이 생겼어요.",
+    "climate_impact": "낮에는 매우 뜨겁고 밤에는 차가워져요. 모래는 열을 빨리 받고 빨리 식기 때문이에요. 또한 사막에서 나는 먼지가 바람을 타고 멀리까지 날아가서 다른 지역의 날씨에도 영향을 줍니다.",
+    "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80"
+  },
+  {
+    "name": "마리아나 해구 (태평양)",
+    "location": [11.4, 142.2],
+    "formation": "바다 밑 두 개의 판이 만나면서 한 쪽이 다른 쪽 아래로 들어가면서 만들어진 바다에서 가장 깊은 곳입니다. 마치 땅이 아래로 꺼지면서 깊은 구덩이가 생긴 것과 같아요.",
+    "climate_impact": "바다가 매우 깊어서 바닷물의 흐름에 영향을 줍니다. 깊은 바다의 차가운 물과 표면의 따뜻한 물이 섞이면서 주변 바다의 온도와 해류를 조절하는 역할을 해요.",
+    "image": "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80"
+  },
+  {
+    "name": "울룰루 (호주)",
+    "location": [-25.3444, 131.0369],
+    "formation": "아주 오래전에 바다 밑에 쌓인 모래와 자갈이 단단한 바위가 되고, 나중에 땅이 올라오면서 주변이 깎여나가 남은 거대한 바위산입니다. 마치 큰 케이크에서 한 조각만 남은 것처럼 생겼어요.",
+    "climate_impact": "큰 바위덩어리라서 낮에는 태양열을 많이 받아 뜨거워지고, 밤에는 열을 많이 내보내서 차가워져요. 이 때문에 주변보다 온도 변화가 더 크고, 바위 주변에서 상승기류가 생겨 구름이 생기기도 합니다.",
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    "name": "피오르드랜드 (뉴질랜드)",
+    "location": [-45.4, 167.7],
+    "formation": "빙하시대에 거대한 얼음덩어리(빙하)가 산을 깎아내면서 만든 깊고 좁은 바다 골짜기입니다. 빙하가 녹고 바닷물이 들어와서 절벽으로 둘러싸인 아름다운 바다가 되었어요.",
+    "climate_impact": "높은 산들이 바다와 가까이 있어서 바다에서 온 습한 공기가 산에 부딪혀 비를 많이 내려요. 그래서 이 지역은 일년 내내 비가 자주 오고 녹색 식물들이 무성하게 자랍니다.",
+    "image": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2106&q=80"
+  },
+  {
+    "name": "이구아수 폭포 (브라질/아르헨티나)",
+    "location": [-25.6953, -54.4367],
+    "formation": "강이 흐르다가 단단한 바위와 무른 바위를 만나면서 생긴 폭포입니다. 무른 바위는 물에 깎여나가고 단단한 바위는 남아서 절벽이 되었고, 물이 그 절벽에서 떨어지면서 멋진 폭포가 만들어졌어요.",
+    "climate_impact": "많은 양의 물이 떨어지면서 주변에 물방울이 많이 생기고 습도가 높아져요. 이 때문에 폭포 주변은 항상 촉촉하고 무지개가 자주 나타나며, 열대 식물들이 잘 자랍니다.",
+    "image": "https://images.unsplash.com/photo-1520637836862-4d197d17c50a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    "name": "킬리만자로산 (탄자니아)",
+    "location": [-3.0674, 37.3556],
+    "formation": "땅 속에서 뜨거운 마그마가 올라와서 만들어진 화산입니다. 오랜 시간 동안 용암이 쌓이고 쌓여서 아프리카에서 가장 높은 산이 되었어요. 지금은 화산 활동이 멈춰있는 상태입니다.",
+    "climate_impact": "적도 근처에 있지만 산이 너무 높아서 꼭대기에는 눈이 쌓여있어요. 높이에 따라 기온이 달라서 아래쪽은 더운 사바나, 중간은 숲, 위쪽은 추운 지역으로 나뉘어져 있습니다.",
+    "image": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80"
+  },
+  {
+    "name": "빅토리아 폭포 (잠비아/짐바브웨)",
+    "location": [-17.9243, 25.8572],
+    "formation": "잠베지 강이 흐르다가 갑자기 깊은 계곡으로 떨어지면서 만들어진 폭포입니다. 강바닥에 있던 무른 바위가 물에 깎여나가면서 깊은 협곡이 생기고, 물이 그곳으로 떨어지면서 거대한 폭포가 되었어요.",
+    "climate_impact": "폭포에서 떨어지는 엄청난 양의 물 때문에 항상 물안개가 피어올라요. 이 물안개는 몇 킬로미터 밖에서도 보일 정도로 높이 올라가며, 주변을 촉촉하게 만들어 열대 우림이 자라도록 도와줍니다.",
+    "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+  },
+  {
+    "name": "파타고니아 빙하 (아르헨티나/칠레)",
+    "location": [-50.4967, -73.1344],
+    "formation": "남극에 가까운 추운 지역에서 오랜 시간 동안 눈이 쌓이고 압축되어 거대한 얼음덩어리가 된 것입니다. 이 얼음덩어리가 천천히 바다 쪽으로 흘러내리면서 빙하가 만들어졌어요.",
+    "climate_impact": "거대한 얼음덩어리가 주변 기온을 낮춰주는 역할을 해요. 또한 빙하가 녹으면서 차가운 민물을 바다로 보내서 바닷물의 온도와 염도를 바꾸고, 해류의 흐름에도 영향을 줍니다.",
+    "image": "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80"
+  }
+]
