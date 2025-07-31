@@ -539,13 +539,19 @@
                         .pointLabel('label')
                         .onPointClick((point) => {
                             console.log('Point clicked:', point.landform.name);
-                            // 패널이 숨겨져 있다면 먼저 표시
+                            
+                            // 강제로 패널 표시
                             const panel = document.getElementById('infoPanel');
-                            if (panel && panel.classList.contains('hidden')) {
+                            if (panel) {
                                 panel.classList.remove('hidden');
+                                console.log('Panel shown');
                             }
-                            // 정보 표시
-                            this.showLandformInfo(point.landform);
+                            
+                            // 약간의 지연 후 정보 표시 (패널 애니메이션 완료 대기)
+                            setTimeout(() => {
+                                this.showLandformInfo(point.landform);
+                            }, 100);
+                            
                             // 클릭한 지점으로 카메라 이동
                             this.globe.pointOfView({
                                 lat: point.lat,
@@ -605,7 +611,7 @@
             }
 
             showLandformInfo(landform) {
-                console.log('Showing landform info:', landform.name);
+                console.log('Showing landform info for:', landform.name);
                 
                 const panel = document.getElementById('infoPanel');
                 const welcomeMessage = document.getElementById('welcomeMessage');
@@ -614,6 +620,12 @@
                 if (!panel || !welcomeMessage || !card) {
                     console.error('Panel elements not found');
                     return;
+                }
+
+                // 패널이 숨겨져 있다면 강제로 표시
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    console.log('Forced panel to show');
                 }
 
                 // 환영 메시지 숨기고 카드 보이기
@@ -625,25 +637,46 @@
                 const formationElement = document.getElementById('landformFormation');
                 const climateElement = document.getElementById('landformClimate');
                 
-                if (titleElement) titleElement.textContent = landform.name;
-                if (formationElement) formationElement.textContent = landform.formation;
-                if (climateElement) climateElement.textContent = landform.climate_impact;
+                if (titleElement) {
+                    titleElement.textContent = landform.name;
+                    console.log('Title set:', landform.name);
+                }
+                if (formationElement) {
+                    formationElement.textContent = landform.formation;
+                    console.log('Formation text set');
+                }
+                if (climateElement) {
+                    climateElement.textContent = landform.climate_impact;
+                    console.log('Climate text set');
+                }
 
                 // 이미지 설정
                 const imageElement = document.getElementById('landformImage');
                 if (imageElement && landform.image && landform.image.trim() !== '') {
                     imageElement.src = landform.image;
                     imageElement.style.display = 'block';
+                    console.log('Image set:', landform.image);
                     imageElement.onerror = () => {
+                        console.warn('Image failed to load:', landform.image);
                         imageElement.style.display = 'none';
                     };
                 } else if (imageElement) {
                     imageElement.style.display = 'none';
+                    console.log('No image available');
                 }
 
-                // 패널 보이기
-                panel.classList.remove('hidden');
-                console.log('Info panel should now be visible');
+                console.log('Info panel setup completed');
+                
+                // 최종 확인 - 패널이 실제로 보이는지 체크
+                setTimeout(() => {
+                    const finalCheck = document.getElementById('infoPanel');
+                    if (finalCheck && finalCheck.classList.contains('hidden')) {
+                        console.error('Panel is still hidden, forcing show again');
+                        finalCheck.classList.remove('hidden');
+                    } else {
+                        console.log('Panel is visible');
+                    }
+                }, 200);
             }
 
             closeInfoPanel() {
@@ -694,6 +727,14 @@
 
         // 앱 시작
         document.addEventListener('DOMContentLoaded', () => {
+            // 패널 초기 상태 설정
+            const panel = document.getElementById('infoPanel');
+            if (panel) {
+                panel.classList.add('hidden');
+                console.log('Panel initialized as hidden');
+            }
+            
+            // Globe 앱 시작
             new LandformGlobe();
         });
     </script>
