@@ -391,8 +391,8 @@
             init() {
                 const container = document.getElementById('globeContainer');
                 
-                // Globe.gl 초기화
-                this.globe = Globe()
+                // Globe.gl 초기화 (올바른 방식)
+                this.globe = Globe()(container)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
                     .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
@@ -402,9 +402,6 @@
                     .enablePointerInteraction(true)
                     .width(container.clientWidth)
                     .height(container.clientHeight);
-
-                // 컨테이너에 추가
-                container.appendChild(this.globe(container));
 
                 // 초기 카메라 설정
                 this.globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 });
@@ -416,19 +413,24 @@
                 // 이벤트 리스너 추가
                 this.addEventListeners();
 
-                // 로딩 완료
+                // 로딩 완료 - 지구본이 실제로 로드된 후
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
-                }, 2000);
+                }, 1500);
             }
 
             async loadLandformData() {
                 try {
                     const response = await fetch('data.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     this.landforms = await response.json();
+                    console.log('Data loaded successfully:', this.landforms.length, 'landforms');
                     this.createLandformPoints();
                 } catch (error) {
-                    console.error('데이터를 불러올 수 없습니다:', error);
+                    console.warn('데이터를 불러올 수 없습니다:', error);
+                    console.log('샘플 데이터를 사용합니다.');
                     // 에러 발생 시 샘플 데이터 사용
                     this.loadSampleData();
                 }
@@ -476,9 +478,12 @@
             }
 
             createLandformPoints() {
+                console.log('Creating landform points:', this.landforms.length);
+                
                 // 포인트 데이터 준비
                 const pointsData = this.landforms.map((landform, index) => {
                     const [lat, lng] = landform.location;
+                    console.log(`Point ${index + 1}: ${landform.name} at [${lat}, ${lng}]`);
                     return {
                         lat: lat,
                         lng: lng,
@@ -498,6 +503,7 @@
                     .pointResolution(20)
                     .pointLabel('label')
                     .onPointClick((point) => {
+                        console.log('Point clicked:', point.landform.name);
                         this.showLandformInfo(point.landform);
                         // 클릭한 지점으로 카메라 이동
                         this.globe.pointOfView({
@@ -510,6 +516,16 @@
                         // 호버 시 커서 변경
                         document.body.style.cursor = point ? 'pointer' : 'default';
                     });
+                
+                console.log('Points added to globe');
+                
+                // 로딩 메시지 숨기기 (포인트 생성 완료 후)
+                setTimeout(() => {
+                    const loadingElement = document.getElementById('loading');
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                }, 500);
             }
 
             addEventListeners() {
