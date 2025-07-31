@@ -410,12 +410,17 @@
                 this.globe.controls().autoRotate = true;
                 this.globe.controls().autoRotateSpeed = 0.5;
 
-                // 이벤트 리스너 추가
-                this.addEventListeners();
+                // DOM이 완전히 로드된 후 이벤트 리스너 추가
+                setTimeout(() => {
+                    this.addEventListeners();
+                }, 100);
 
                 // 로딩 완료 - 지구본이 실제로 로드된 후
                 setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
+                    const loadingElement = document.getElementById('loading');
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
                 }, 1500);
             }
 
@@ -480,6 +485,13 @@
             createLandformPoints() {
                 console.log('Creating landform points:', this.landforms.length);
                 
+                // 지구본이 준비될 때까지 잠시 기다림
+                if (!this.globe) {
+                    console.warn('Globe not ready, retrying...');
+                    setTimeout(() => this.createLandformPoints(), 500);
+                    return;
+                }
+                
                 // 포인트 데이터 준비
                 const pointsData = this.landforms.map((landform, index) => {
                     const [lat, lng] = landform.location;
@@ -487,37 +499,43 @@
                     return {
                         lat: lat,
                         lng: lng,
-                        size: 0.8,
+                        size: 1.2,
                         color: '#ff4757',
                         landform: landform,
                         label: landform.name
                     };
                 });
 
-                // 포인트들을 지구본에 추가
-                this.globe
-                    .pointsData(pointsData)
-                    .pointColor('color')
-                    .pointAltitude(0.01)
-                    .pointRadius('size')
-                    .pointResolution(20)
-                    .pointLabel('label')
-                    .onPointClick((point) => {
-                        console.log('Point clicked:', point.landform.name);
-                        this.showLandformInfo(point.landform);
-                        // 클릭한 지점으로 카메라 이동
-                        this.globe.pointOfView({
-                            lat: point.lat,
-                            lng: point.lng,
-                            altitude: 1.5
-                        }, 1000);
-                    })
-                    .onPointHover((point) => {
-                        // 호버 시 커서 변경
-                        document.body.style.cursor = point ? 'pointer' : 'default';
-                    });
-                
-                console.log('Points added to globe');
+                try {
+                    // 포인트들을 지구본에 추가
+                    this.globe
+                        .pointsData(pointsData)
+                        .pointColor('color')
+                        .pointAltitude(0.02)
+                        .pointRadius('size')
+                        .pointResolution(12)
+                        .pointLabel('label')
+                        .onPointClick((point) => {
+                            console.log('Point clicked:', point.landform.name);
+                            this.showLandformInfo(point.landform);
+                            // 클릭한 지점으로 카메라 이동
+                            this.globe.pointOfView({
+                                lat: point.lat,
+                                lng: point.lng,
+                                altitude: 1.5
+                            }, 1000);
+                        })
+                        .onPointHover((point) => {
+                            // 호버 시 커서 변경
+                            if (document.body) {
+                                document.body.style.cursor = point ? 'pointer' : 'default';
+                            }
+                        });
+                    
+                    console.log('Points added to globe successfully');
+                } catch (error) {
+                    console.error('Error adding points to globe:', error);
+                }
                 
                 // 로딩 메시지 숨기기 (포인트 생성 완료 후)
                 setTimeout(() => {
@@ -529,18 +547,34 @@
             }
 
             addEventListeners() {
-                // 컨트롤 버튼들
-                document.getElementById('rotateBtn').addEventListener('click', () => {
-                    this.toggleRotation();
-                });
+                // 요소가 존재하는지 확인 후 이벤트 리스너 추가
+                const rotateBtn = document.getElementById('rotateBtn');
+                const resetBtn = document.getElementById('resetBtn');
+                const closeBtn = document.getElementById('closeBtn');
 
-                document.getElementById('resetBtn').addEventListener('click', () => {
-                    this.resetView();
-                });
+                if (rotateBtn) {
+                    rotateBtn.addEventListener('click', () => {
+                        this.toggleRotation();
+                    });
+                } else {
+                    console.warn('rotateBtn not found');
+                }
 
-                document.getElementById('closeBtn').addEventListener('click', () => {
-                    this.closeInfoPanel();
-                });
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        this.resetView();
+                    });
+                } else {
+                    console.warn('resetBtn not found');
+                }
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        this.closeInfoPanel();
+                    });
+                } else {
+                    console.warn('closeBtn not found');
+                }
 
                 // 리사이즈 이벤트
                 window.addEventListener('resize', () => {
