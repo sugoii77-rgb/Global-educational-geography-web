@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지형 탐험 지구본 🌍</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .globe-container {
+            flex: 1;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .info-panel {
+            width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-panel.hidden {
+            transform: translateX(100%);
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #7f8c8d;
+            line-height: 1.4;
+        }
+
+        .landform-card {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .landform-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .landform-content {
+            padding: 25px;
+        }
+
+        .landform-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            font-size: 16px;
+            color: #3498db;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section h3::before {
+            content: "🔍";
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .info-section.climate h3::before {
+            content: "🌤️";
+        }
+
+        .info-section p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #2c3e50;
+            text-align: justify;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #c0392b;
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 18px;
+            line-height: 1.6;
+            padding: 50px 20px;
+        }
+
+        .welcome-message h2 {
+            font-size: 24px;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+        }
+
+        .point-label {
+            position: absolute;
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+            white-space: nowrap;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .info-panel {
+                width: 100%;
+                height: 50vh;
+                transform: translateY(100%);
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+
+            .info-panel.hidden {
+                transform: translateY(100%);
+            }
+
+            .info-panel:not(.hidden) {
+                transform: translateY(0);
+            }
+
+            .globe-container {
+                height: 100vh;
+            }
+
+            .header {
+                position: relative;
+                margin: 10px;
+                top: 0;
+                left: 0;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+
+        /* 작은 화면에서 헤더 숨기기 */
+        @media (max-height: 600px) {
+            .header {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">🌍 지구본을 준비하고 있어요...</div>
+    
+    <div class="container">
+        <div class="globe-container" id="globeContainer">
+            <div class="header">
+                <h1>🌍 지형 탐험 지구본</h1>
+                <p>지구본의 빨간 점을 클릭해서<br>신비한 지형들을 탐험해보세요!</p>
+            </div>
+        </div>
+
+        <div class="info-panel hidden" id="infoPanel">
+            <button class="close-btn" id="closeBtn">×</button>
+            <div class="welcome-message" id="welcomeMessage">
+                <h2>🗻 지형 탐험을 시작해보세요!</h2>
+                <p>지구본에 표시된 빨간 점들을 클릭하면<br>세계 곳곳의 멋진 지형들에 대해<br>자세히 알아볼 수 있어요.</p>
+                <p style="margin-top: 20px; font-size: 16px;">📍 총 10개의 지형이 기다리고 있어요!</p>
+            </div>
+            <div class="landform-card" id="landformCard" style="display: none;">
+                <img id="landformImage" class="landform-image" alt="지형 이미지">
+                <div class="landform-content">
+                    <h2 class="landform-title" id="landformTitle"></h2>
+                    <div class="info-section">
+                        <h3>어떻게 만들어졌을까요?</h3>
+                        <p id="landformFormation"></p>
+                    </div>
+                    <div class="info-section climate">
+                        <h3>기후에 미치는 영향</h3>
+                        <p id="landformClimate"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        class LandformGlobe {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.globe = null;
+                this.landforms = [];
+                this.landformPoints = [];
+                this.mouse = new THREE.Vector2();
+                this.raycaster = new THREE.Raycaster();
+                this.isRotating = true;
+                this.hoveredPoint = null;
+                
+                this.init();
+                this.loadLandformData();
+            }
+
+            init() {
+                const container = document.getElementById('globeContainer');
+                
+                // Scene 설정
+                this.scene = new THREE.Scene();
+                
+                // Camera 설정
+                this.camera = new THREE.PerspectiveCamera(
+                    75, 
+                    container.clientWidth / container.clientHeight, 
+                    0.1, 
+                    1000
+                );
+                this.camera.position.z = 3;
+
+                // Renderer 설정
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.setClearColor(0x000000, 0);
+                container.appendChild(this.renderer.domElement);
+
+                // 조명 설정
+                const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(1, 1, 1);
+                this.scene.add(directionalLight);
+
+                // 지구본 생성
+                this.createGlobe();
+
+                // 이벤트 리스너 추가
+                this.addEventListeners();
+
+                // 애니메이션 시작
+                this.animate();
+
+                // 로딩 메시지 숨기기
+                document.getElementById('loading').style.display = 'none';
+            }
+
+            createGlobe() {
+                const geometry = new THREE.SphereGeometry(1, 64, 64);
+                
+                // 지구 텍스처 (간단한 파란색)
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x4a90e2,
+                    shininess: 100
+                });
+
+                this.globe = new THREE.Mesh(geometry, material);
+                this.scene.add(this.globe);
+
+                // 대륙 표현을 위한 추가 레이어
+                const continentGeometry = new THREE.SphereGeometry(1.001, 64, 64);
+                const continentMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x2d5016,
+                    transparent: true,
+                    opacity: 0.8
+                });
+
+                const continents = new THREE.Mesh(continentGeometry, continentMaterial);
+                this.scene.add(continents);
+            }
+
+            async loadLandformData() {
+                try {
+                    const response = await fetch('data.json');
+                    this.landforms = await response.json();
+                    this.createLandformPoints();
+                } catch (error) {
+                    console.error('데이터를 불러올 수 없습니다:', error);
+                    alert('지형 데이터를 불러오는 중 오류가 발생했습니다. data.json 파일이 있는지 확인해주세요.');
+                }
+            }
+
+            createLandformPoints() {
+                this.landforms.forEach((landform, index) => {
+                    const [lat, lon] = landform.location;
+                    
+                    // 위도/경도를 3D 좌표로 변환
+                    const phi = (90 - lat) * (Math.PI / 180);
+                    const theta = (lon + 180) * (Math.PI / 180);
+                    
+                    const x = -(1.02 * Math.sin(phi) * Math.cos(theta));
+                    const y = 1.02 * Math.cos(phi);
+                    const z = 1.02 * Math.sin(phi) * Math.sin(theta);
+
+                    // 포인트 생성
+                    const pointGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+                    const pointMaterial = new THREE.MeshBasicMaterial({ 
+                        color: 0xff4757,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    
+                    const point = new THREE.Mesh(pointGeometry, pointMaterial);
+                    point.position.set(x, y, z);
+                    point.userData = { landform: landform, index: index };
+                    
+                    this.scene.add(point);
+                    this.landformPoints.push(point);
+
+                    // 펄스 애니메이션을 위한 초기 스케일 설정
+                    point.originalScale = 1;
+                    point.pulsePhase = Math.random() * Math.PI * 2;
+                });
+            }
+
+            addEventListeners() {
+                const container = this.renderer.domElement;
+                
+                // 마우스 이벤트
+                container.addEventListener('mousemove', (event) => {
+                    const rect = container.getBoundingClientRect();
+                    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                    
+                    this.checkIntersections();
+                });
+
+                container.addEventListener('click', (event) => {
+                    this.handleClick();
+                });
+
+                // 리사이즈 이벤트
+                window.addEventListener('resize', () => {
+                    this.onWindowResize();
+                });
+
+                // 패널 닫기 버튼
+                document.getElementById('closeBtn').addEventListener('click', () => {
+                    this.closeInfoPanel();
+                });
+
+                // 자동 회전 제어
+                container.addEventListener('mouseenter', () => {
+                    this.isRotating = false;
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    this.isRotating = true;
+                });
+            }
+
+            checkIntersections() {
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.landformPoints);
+
+                // 이전 호버 상태 해제
+                if (this.hoveredPoint && !intersects.find(i => i.object === this.hoveredPoint)) {
+                    this.hoveredPoint.material.color.setHex(0xff4757);
+                    this.hoveredPoint = null;
+                    this.renderer.domElement.style.cursor = 'default';
+                }
+
+                // 새로운 호버 상태 설정
+                if (intersects.length > 0) {
+                    const point = intersects[0].object;
+                    if (this.hoveredPoint !== point) {
+                        this.hoveredPoint = point;
+                        point.material.color.setHex(0xff6b7a);
+                        this.renderer.domElement.style.cursor = 'pointer';
+                    }
+                }
+            }
+
+            handleClick() {
+                if (this.hoveredPoint) {
+                    const landform = this.hoveredPoint.userData.landform;
+                    this.showLandformInfo(landform);
+                }
+            }
+
+            showLandformInfo(landform) {
+                const panel = document.getElementById('infoPanel');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const card = document.getElementById('landformCard');
+
+                // 환영 메시지 숨기고 카드 보이기
+                welcomeMessage.style.display = 'none';
+                card.style.display = 'block';
+
+                // 정보 채우기
+                document.getElementById('landformTitle').textContent = landform.name;
+                document.getElementById('landformFormation').textContent = landform.formation;
+                document.getElementById('landformClimate').textContent = landform.climate_impact;
+
+                // 이미지 설정
+                const imageElement = document.getElementById('landformImage');
+                if (landform.image && landform.image.trim() !== '') {
+                    imageElement.src = landform.image;
+                    imageElement.style.display = 'block';
+                    imageElement.onerror = () => {
+                        imageElement.style.display = 'none';
+                    };
+                } else {
+                    imageElement.style.display = 'none';
+                }
+
+                // 패널 보이기
+                panel.classList.remove('hidden');
+            }
+
+            closeInfoPanel() {
+                const panel = document.getElementById('infoPanel');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const card = document.getElementById('landformCard');
+
+                panel.classList.add('hidden');
+                
+                // 잠시 후 환영 메시지로 되돌리기
+                setTimeout(() => {
+                    if (panel.classList.contains('hidden')) {
+                        welcomeMessage.style.display = 'block';
+                        card.style.display = 'none';
+                    }
+                }, 300);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+
+                // 지구본 자동 회전
+                if (this.isRotating && this.globe) {
+                    this.globe.rotation.y += 0.002;
+                }
+
+                // 포인트 펄스 애니메이션
+                this.landformPoints.forEach(point => {
+                    point.pulsePhase += 0.05;
+                    const scale = 1 + Math.sin(point.pulsePhase) * 0.2;
+                    point.scale.setScalar(scale);
+                });
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onWindowResize() {
+                const container = document.getElementById('globeContainer');
+                
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        }
+
+        // 앱 시작
+        document.addEventListener('DOMContentLoaded', () => {
+            new LandformGlobe();
+        });
+    </script>
+</body>
+</html>
